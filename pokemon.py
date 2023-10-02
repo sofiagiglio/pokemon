@@ -62,21 +62,35 @@ def display_pokemon_info(pokemon_name):
 
     if response.status_code == 200:
         data = response.json()
+        
+        # Convertir la altura de decímetros a centímetros
+        altura_cm = data['height'] * 10
+        
+        # Convertir el peso de hectogramos a kilogramos
+        peso_kg = data['weight'] / 10
+        
         pokemon_info = f"Nombre: {data['name'].capitalize()}\n" \
                        f"ID: {data['id']}\n" \
-                       f"Altura: {data['height']}\n" \
-                       f"Peso: {data['weight']}\n" \
+                       f"Altura: {altura_cm} cm\n" \
+                       f"Peso: {peso_kg} kg\n" \
                        "Tipos: " + ", ".join([t['type']['name'] for t in data['types']])
         result_label.config(text=pokemon_info)
     else:
         result_label.config(text="Información del Pokémon no disponible")
-
 # Obtener la lista de nombres de Pokémon desde la API
 pokemon_list = get_pokemon_list()
 
 # Crear la ventana de la aplicación
 app = tk.Tk()
 app.title("Adivina el Pokémon")
+
+# Cargar la imagen de fondo
+background_image = Image.open('pokedex.jpg')  # Reemplaza 'tu_imagen_de_fondo.png' con la ruta de tu imagen de fondo
+background_photo = ImageTk.PhotoImage(background_image)
+
+# Crear un Label para la imagen de fondo
+background_label = tk.Label(app, image=background_photo)
+background_label.place(x=0, y=0, relwidth=1, relheight=1)
 
 # Crear elementos de la interfaz gráfica
 label = tk.Label(app, text="¿Quién es ese Pokémon?:")
@@ -101,3 +115,4 @@ result_label.pack()
 
 app.geometry("400x400")  # Tamaño inicial de la ventana
 app.mainloop()
+
