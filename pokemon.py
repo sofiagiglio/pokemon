@@ -5,6 +5,13 @@ import io
 from PIL import Image, ImageTk
 import random
 
+# Variables para realizar un seguimiento de los récords y logros
+highest_score = 0  # Puntuación más alta
+current_streak = 0  # Racha actual de Pokémon adivinados
+lives = 3  # Número inicial de vidas
+current_pokemon = None
+score = 0  # Variable para realizar un seguimiento de la puntuación del jugador
+
 def get_pokemon_list():
     url = 'https://pokeapi.co/api/v2/pokemon?limit=1000'  # Obtén una lista de 1000 Pokémon
 
@@ -22,8 +29,9 @@ def get_pokemon_list():
 current_pokemon = None
 
 def get_random_pokemon():
-    global current_pokemon
-    # Borra la información del Pokémon anterior
+    global current_pokemon, current_streak  # Agregar una referencia a la variable global current_streak
+    # Reiniciar la racha al obtener un nuevo Pokémon aleatorio
+    current_streak = 0
     result_label.config(text="")
 
     # Obtener un Pokémon aleatorio de la lista
@@ -47,13 +55,37 @@ def get_random_pokemon():
         image_label.image = img
 
 def check_guess():
+    global score, lives, highest_score, current_streak  # Agregar referencias a las variables globales
     if current_pokemon is not None:
         guess = entry.get().lower()
         if guess == current_pokemon:
+            # Incrementar la puntuación cuando el jugador adivina correctamente
+            score += 1
+            # Incrementar la racha de Pokémon adivinados
+            current_streak += 1
+            # Actualizar la puntuación más alta si es necesario
+            if score > highest_score:
+                highest_score = score
             # Mostrar la información del Pokémon en el Label de resultado
             display_pokemon_info(current_pokemon)
+            # Actualizar la etiqueta de la puntuación
+            score_label.config(text=f"Puntuación: {score}")
+            # Verificar si se ha alcanzado un logro (por ejemplo, una racha de 5 Pokémon adivinados)
+            if current_streak == 5:
+                messagebox.showinfo("Logro desbloqueado", "¡Has alcanzado una racha de 5 Pokémon adivinados!")
         else:
-            messagebox.showerror("Incorrecto", f"Inténtalo de nuevo. El Pokémon no es {guess.capitalize()}.")
+            # Restar una vida en caso de adivinanza incorrecta
+            lives -= 1
+            current_streak = 0  # Reiniciar la racha en caso de adivinanza incorrecta
+            if lives > 0:
+                messagebox.showerror("Incorrecto", f"Inténtalo de nuevo. Te quedan {lives} vidas.")
+            else:
+                messagebox.showinfo("Juego terminado", f"Perdiste todas tus vidas. Tu puntuación final es: {score}")
+                app.quit()  # Cerrar la aplicación cuando se quedan sin vidas
+    lives_label.config(text=f"Vidas: {lives}")
+    # Actualizar la etiqueta de la puntuación más alta
+    highest_score_label.config(text=f"Puntuación más alta: {highest_score}")
+
 
 def display_pokemon_info(pokemon_name):
     url = f'https://pokeapi.co/api/v2/pokemon/{pokemon_name}/'
@@ -114,5 +146,13 @@ result_label = tk.Label(app, text="")
 result_label.pack()
 
 app.geometry("400x400")  # Tamaño inicial de la ventana
+# Crear una etiqueta para mostrar la puntuación
+score_label = tk.Label(app, text=f"Puntuación: {score}")
+score_label.pack()
+# Crear una etiqueta para mostrar las vidas restantes
+lives_label = tk.Label(app, text=f"Vidas: {lives}")
+lives_label.pack()
+# Crear una etiqueta para mostrar la puntuación más alta
+highest_score_label = tk.Label(app, text=f"Puntuación más alta: {highest_score}")
+highest_score_label.pack()
 app.mainloop()
-
