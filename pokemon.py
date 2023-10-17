@@ -8,12 +8,10 @@ import random
 mayor_puntaje = 0
 racha_actual = 0
 vidas = 3
-pokemon_actual = None
 puntuacion = 0
 
 def pokelista():
     url = 'https://pokeapi.co/api/v2/pokemon?limit=1000'
-
     response = requests.get(url)
 
     if response.status_code == 200:
@@ -24,16 +22,21 @@ def pokelista():
         messagebox.showerror("Error", "No se pudo obtener la lista de Pokémon")
         return []
 
-pokemon_actual = None
+pokelista = pokelista()
+pokemon_adivinados = []
 
 def pokerandom():
-    global pokemon_actual, racha_actual
+    global pokemon_actual, racha_actual, pokemon_adivinados
     racha_actual = 0
     result_label.config(text="")
 
-    pokemon_actual = random.choice(pokelista)
-    url = f'https://pokeapi.co/api/v2/pokemon/{pokemon_actual}/'
+    # Elige un nuevo Pokémon aleatoriamente que no ha sido adivinado aún
+    while True:
+        pokemon_actual = random.choice(pokelista)
+        if pokemon_actual not in pokemon_adivinados:
+            break
 
+    url = f'https://pokeapi.co/api/v2/pokemon/{pokemon_actual}/'
     response = requests.get(url)
 
     if response.status_code == 200:
@@ -48,10 +51,11 @@ def pokerandom():
         image_label.config(image=img, compound=tk.CENTER)
         image_label.image = img
 
-def reiniciar_juego():
+def pokereiniciar():
     global puntuacion, vidas, pokemon_actual
     puntuacion = 0
     vidas = 3
+    pokemon_adivinados.clear()  # Limpia la lista de Pokémon adivinados
     pokerandom()
     puntuacion_label.config(text=f"Puntuación: {puntuacion}")
     vidas_label.config(text=f"Vidas: {vidas}")
@@ -59,14 +63,15 @@ def reiniciar_juego():
     entry.delete(0, tk.END)
 
 def pokecomprobar():
-    global puntuacion, vidas, mayor_puntaje, racha_actual, pokemon_actual
+    global puntuacion, vidas, mayor_puntaje, racha_actual, pokemon_actual, pokemon_adivinados
     if pokemon_actual is not None:
         guess = entry.get().lower()
-        if guess == pokemon_actual:
+        if guess == pokemon_actual and guess not in pokemon_adivinados:
             puntuacion += 1
             racha_actual += 1
             if puntuacion > mayor_puntaje:
                 mayor_puntaje = puntuacion
+            pokemon_adivinados.append(pokemon_actual)  # Agrega el Pokémon a la lista de adivinados
             pokeinfo(pokemon_actual)
             puntuacion_label.config(text=f"Puntuación: {puntuacion}")
             if racha_actual == 5:
@@ -76,14 +81,10 @@ def pokecomprobar():
             racha_actual = 0
             if vidas >= 0:
                 if vidas == 0:
-                    # Mostrar el nombre del Pokémon en la ventana de mensaje cuando se pierde la última vida
                     messagebox.showinfo("Juego terminado", f"Perdiste todas tus vidas. El Pokémon era: {pokemon_actual}. Tu puntuación final es: {puntuacion}")
-                    # Reiniciar el juego
-                    reiniciar_juego()
-                else:
-                    # Mostrar el nombre del Pokémon en la ventana de mensaje cuando se pierde una vida
+                    pokereiniciar()  # Reinicia el juego cuando se pierden todas las vidas
+                elif guess != pokemon_actual and guess not in pokemon_adivinados:
                     messagebox.showerror("Incorrecto", f"Inténtalo de nuevo. Te quedan {vidas} vidas. El Pokémon era: {pokemon_actual}")
-                # Cambiar el Pokémon actual solo si quedan vidas
                 if vidas >= 0:
                     pokerandom()
     vidas_label.config(text=f"Vidas: {vidas}")
@@ -91,14 +92,12 @@ def pokecomprobar():
 
 def pokeinfo(pokemon_name):
     url = f'https://pokeapi.co/api/v2/pokemon/{pokemon_name}/'
-
     response = requests.get(url)
 
     if response.status_code == 200:
         data = response.json()
 
         altura_cm = data['height'] * 10
-
         peso_kg = data['weight'] / 10
 
         pokemon_info = f"Nombre: {data['name'].capitalize()}\n" \
@@ -110,7 +109,6 @@ def pokeinfo(pokemon_name):
     else:
         result_label.config(text="Información del Pokémon no disponible")
 
-pokelista = pokelista()
 
 app = tk.Tk()
 app.title("Adivina el Pokémon")
