@@ -1,169 +1,344 @@
-import requests  # Importa la biblioteca "requests" para hacer solicitudes HTTP a la API de Pokémon.
-import tkinter as tk  # Importa la biblioteca "tkinter" y la renombra como "tk" para crear la interfaz gráfica de usuario (GUI).
-from tkinter import messagebox  # Importa la función "messagebox" de tkinter para mostrar ventanas emergentes de mensajes de error o información.
-import io  # Importa la biblioteca "io" para trabajar con datos en memoria, que se utiliza para procesar datos de imágenes.
-from PIL import Image, ImageTk  # Importa la biblioteca "PIL" (Python Imaging Library) y sus módulos "Image" y "ImageTk" para trabajar con imágenes y mostrarlas en la GUI.
-import random  # Importa la biblioteca "random" para generar números aleatorios y seleccionar Pokémon al azar.
+# Importa la biblioteca "requests" para realizar solicitudes HTTP a la API de Pokémon.
+# "requests" es una biblioteca que permite realizar solicitudes HTTP en Python.
+import requests  
 
-mayor_puntaje = 0  # Inicializa una variable para realizar un seguimiento del puntaje más alto.
-racha_actual = 0  # Inicializa una variable para realizar un seguimiento de la racha actual de Pokémon adivinados.
-vidas = 3  # Inicializa una variable para realizar un seguimiento de las vidas del jugador.
-puntuacion = 0  # Inicializa una variable para realizar un seguimiento de la puntuación actual.
+# Importa la biblioteca "tkinter" y la renombra como "tk" para crear la interfaz gráfica de usuario (GUI).
+# "tkinter" es una biblioteca estándar de Python para crear interfaces gráficas.
+import tkinter as tk  
 
-# Función para obtener una lista de nombres de Pokémon desde una página web.
+# Importa la función "messagebox" de tkinter para mostrar ventanas emergentes de mensajes de error o información.
+# "messagebox" es una función que proporciona ventanas emergentes para mostrar mensajes al usuario.
+from tkinter import messagebox  
+
+# Importa la biblioteca "io" para trabajar con datos en memoria, utilizada para procesar datos de imágenes.
+# "io" es una biblioteca que proporciona herramientas para trabajar con flujos de datos en memoria.
+import io  
+
+# Importa la biblioteca "PIL" (Python Imaging Library) y sus módulos "Image" e "ImageTk" para trabajar con imágenes y mostrarlas en la GUI.
+# "PIL" es una biblioteca para trabajar con imágenes en Python.
+from PIL import Image, ImageTk  
+
+# Importa la biblioteca "random" para generar números aleatorios y seleccionar un Pokémon al azar.
+# "random" es una biblioteca que proporciona funciones para trabajar con números aleatorios en Python.
+import random  
+
+
+# Inicializa una variable para realizar un seguimiento del puntaje más alto.
+mayor_puntaje = 0  
+
+# Inicializa una variable para realizar un seguimiento de la racha actual de Pokémon adivinados.
+racha_actual = 0  
+
+# Inicializa una variable para realizar un seguimiento de las vidas del jugador.
+vidas = 3  
+
+# Inicializa una variable para realizar un seguimiento de la puntuación actual.
+puntuacion = 0  
+
+
+# Función para obtener una lista de nombres de Pokémon desde pokeapi.
 def pokelista():
-    url = 'https://pokeapi.co/api/v2/pokemon?limit=1000'  # Define la URL de la API de Pokémon para obtener la lista de Pokémon.
-    response = requests.get(url)  # Realiza una solicitud HTTP a la API para obtener la información.
+    # Define la URL de la API de Pokémon para obtener la lista de Pokémon.
+    url = 'https://pokeapi.co/api/v2/pokemon?limit=1000'  
 
-    if response.status_code == 200:  # Comprueba si la solicitud fue exitosa.
-        data = response.json()  # Procesa la respuesta de la API y la convierte en un objeto Python.
-        pokenombres = [pokemon['name'] for pokemon in data['results']]  # Extrae los nombres de los Pokémon de los datos de la API.
-        return pokenombres  # Devuelve la lista de nombres de Pokémon.
+    # Realiza una solicitud HTTP a la API para obtener la información.
+    response = requests.get(url)  
+
+    # Comprueba si la solicitud fue exitosa.
+    if response.status_code == 200:  
+        # Procesa la respuesta de la API y la convierte en un objeto Python.
+        data = response.json()  
+        
+        # Extrae los nombres de los Pokémon de los datos de la API.
+        pokenombres = [pokemon['name'] for pokemon in data['results']]  
+        
+        # Devuelve la lista de nombres de Pokémon.
+        return pokenombres  
     else:
-        messagebox.showerror("Error", "No se pudo obtener la lista de Pokémon")  # Muestra un mensaje de error si la solicitud falla.
-        return []  # Devuelve una lista vacía en caso de error.
+        # Muestra un mensaje de error si la solicitud falla.
+        messagebox.showerror("Error", "No se pudo obtener la lista de Pokémon")  
+        
+        # Devuelve una lista vacía en caso de error.
+        return []  
 
-pokelista = pokelista()  # Llama a la función para obtener la lista de nombres de Pokémon y almacena los nombres en la variable "pokelista".
-pokemon_adivinados = []  # Inicializa una lista para realizar un seguimiento de los Pokémon adivinados.
+
+# Llama a la función para obtener la lista de nombres de Pokémon y almacena los nombres en la variable "pokelista".
+pokelista = pokelista()  
+
+# Inicializa una lista para realizar un seguimiento de los Pokémon adivinados.
+pokemon_adivinados = []  
+
 
 # Función para seleccionar un Pokémon al azar y mostrarlo en el juego.
 def pokerandom():
-    global pokemon_actual, racha_actual, pokemon_adivinados  # Indica que se utilizarán variables globales en la función.
-    racha_actual = 0  # Restablece la racha de Pokémon adivinados.
-    result_label.config(text="")  # Borra el texto en un widget llamado "result_label".
+    # Indica que se utilizarán variables globales en la función.
+    global pokemon_actual, racha_actual, pokemon_adivinados  
+    
+    # Restablece la racha de Pokémon adivinados.
+    racha_actual = 0  
+    
+    # Borra el texto en un widget llamado "result_label".
+    result_label.config(text="")  
+    
+    # Inicia un bucle infinito
+    while True: 
+        # Selecciona un Pokémon al azar que no ha sido adivinado previamente.
+        pokemon_actual = random.choice(pokelista)  
+        
+        # Verifica si el Pokémon seleccionado no ha sido adivinado.
+        if pokemon_actual not in pokemon_adivinados:  
+            break  # Sale del bucle si el Pokémon es nuevo (no ha sido adivinado).
 
-    while True:
-        pokemon_actual = random.choice(pokelista)  # Selecciona un Pokémon al azar que no ha sido adivinado previamente.
-        if pokemon_actual not in pokemon_adivinados:  # Verifica si el Pokémon seleccionado no ha sido adivinado.
-            break
+    # Crea una URL para obtener información sobre el Pokémon seleccionado.
+    url = f'https://pokeapi.co/api/v2/pokemon/{pokemon_actual}/'  
+    
+    # Realiza una solicitud HTTP para obtener información sobre el Pokémon.
+    response = requests.get(url)  
 
-    url = f'https://pokeapi.co/api/v2/pokemon/{pokemon_actual}/'  # Crea una URL para obtener información sobre el Pokémon seleccionado.
-    response = requests.get(url)  # Realiza una solicitud HTTP para obtener información sobre el Pokémon.
+    # Comprueba si la solicitud fue exitosa.
+    if response.status_code == 200:  
+        # Procesa la respuesta de la API y la convierte en un objeto Python.
+        data = response.json()  
 
-    if response.status_code == 200:  # Comprueba si la solicitud fue exitosa.
-        data = response.json()  # Procesa la respuesta de la API y la convierte en un objeto Python.
+        # Obtiene la URL de la imagen del Pokémon.
+        image_url = data['sprites']['front_default']  
 
-        image_url = data['sprites']['front_default']  # Obtiene la URL de la imagen del Pokémon.
+        # Realiza una segunda solicitud para obtener los datos de la imagen.
+        response = requests.get(image_url)  
+        
+        # Obtiene los datos de la imagen.
+        img_data = response.content  
 
-        response = requests.get(image_url)  # Realiza una segunda solicitud para obtener los datos de la imagen.
-        img_data = response.content  # Obtiene los datos de la imagen.
+        # Crea una imagen a partir de los datos.
+        img = Image.open(io.BytesIO(img_data))  
 
-        img = Image.open(io.BytesIO(img_data))  # Crea una imagen a partir de los datos.
-        img = ImageTk.PhotoImage(img, width=100, height=70)  # Convierte la imagen en un objeto para mostrar en la GUI.
+        # Convierte la imagen en un objeto para mostrar en la GUI.
+        img = ImageTk.PhotoImage(img, width=100, height=70)  
 
-        image_label.config(image=img, compound=tk.CENTER)  # Configura la imagen en un widget llamado "image_label".
-        image_label.image = img  # Asigna la imagen al widget.
+        # Configura la imagen en un widget llamado "image_label".
+        image_label.config(image=img, compound=tk.CENTER)  
+        
+        # Asigna la imagen al widget.
+        image_label.image = img  
+
 
 # Función para reiniciar el juego.
 def pokereiniciar():
-    global puntuacion, vidas, pokemon_actual  # Indica que se utilizarán variables globales en la función.
-    puntuacion = 0  # Restablece la puntuación a 0.
-    vidas = 3  # Restablece las vidas a 3.
-    pokemon_adivinados.clear()  # Borra la lista de Pokémon adivinados.
-    pokerandom()  # Llama a la función "pokerandom" para seleccionar un nuevo Pokémon al azar.
-    puntuacion_label.config(text=f"Puntuación: {puntuacion}")
-    vidas_label.config(text=f"Vidas: {vidas}")
-    result_label.config(text="")
-    entry.delete(0, tk.END)
+    # Indica que se utilizarán variables globales en la función.
+    global puntuacion, vidas, pokemon_actual  
+    
+    # Restablece la puntuación a 0.
+    puntuacion = 0  
+    
+    # Restablece las vidas a 3.# Importa la biblioteca "random" para generar números aleatorios y seleccionar un Pokémon al azar.
+# "random" es una biblioteca que proporciona
+    
+    # Llama a la función "pokerandom" para seleccionar un nuevo Pokémon al azar.
+    pokerandom()  
+    
+    # Actualiza el texto de la etiqueta de puntuación con el valor de la variable "puntuacion".
+    puntuacion_label.config(text=f"Puntuación: {puntuacion}")  
+    
+    # Actualiza el texto de la etiqueta de vidas con el valor de la variable "vidas".
+    vidas_label.config(text=f"Vidas: {vidas}")  
+    
+    # Borra el texto en la etiqueta "result_label" estableciéndolo como una cadena vacía.
+    result_label.config(text="")  
+    
+    # Borra el contenido del campo de entrada de texto, desde el índice 0 hasta el final (tk.END).
+    entry.delete(0, tk.END)  
+
 
 # Función para comprobar si el Pokémon adivinado es correcto.
 def pokecomprobar():
-    global puntuacion, vidas, mayor_puntaje, racha_actual, pokemon_actual, pokemon_adivinados  # Indica que se utilizarán variables globales en la función.
+    # Indica que se utilizarán variables globales en la función.
+    global puntuacion, vidas, mayor_puntaje, racha_actual, pokemon_actual, pokemon_adivinados  
+    
+    # Verifica si hay un Pokémon actual seleccionado.
+    if pokemon_actual is not None:  
+        # Obtiene la conjetura del jugador y la convierte a minúsculas.
+        guess = entry.get().lower()  
 
-    if pokemon_actual is not None:  # Verifica si hay un Pokémon actual seleccionado.
-        guess = entry.get().lower()  # Obtiene la conjetura del jugador y la convierte a minúsculas.
+        # Comprueba si la conjetura es correcta y no ha sido adivinada antes.
+        if guess == pokemon_actual and guess not in pokemon_adivinados:  
+            # Aumenta la puntuación si es correcta.
+            puntuacion += 1  
+            
+            # Aumenta la racha actual de Pokémon adivinados.
+            racha_actual += 1  
 
-        if guess == pokemon_actual and guess not in pokemon_adivinados:  # Comprueba si la conjetura es correcta y no ha sido adivinada antes.
-            puntuacion += 1  # Aumenta la puntuación si es correcta.
-            racha_actual += 1  # Aumenta la racha actual de Pokémon adivinados.
+            # Actualiza el puntaje más alto si es necesario.
+            if puntuacion > mayor_puntaje:  
+                mayor_puntaje = puntuacion  
 
-            if puntuacion > mayor_puntaje:  # Actualiza el puntaje más alto si es necesario.
-                mayor_puntaje = puntuacion
+            # Agrega el Pokémon a la lista de adivinados.
+            pokemon_adivinados.append(pokemon_actual)  
+            
+            # Obtiene información adicional del Pokémon.
+            pokeinfo(pokemon_actual)  
 
-            pokemon_adivinados.append(pokemon_actual)  # Agrega el Pokémon a la lista de adivinados.
-            pokeinfo(pokemon_actual)  # Obtiene información adicional del Pokémon.
+            # Actualiza la etiqueta de puntuación en la GUI.
+            puntuacion_label.config(text=f"Puntuación: {puntuacion}")  
 
-            puntuacion_label.config(text=f"Puntuación: {puntuacion}")  # Actualiza la etiqueta de puntuación en la GUI.
-
-            if racha_actual == 5:  # Muestra un mensaje si se alcanza una racha de 5 Pokémon adivinados.
-                messagebox.showinfo("Logro desbloqueado", "¡Has alcanzado una racha de 5 Pokémon adivinados!")
+            # Muestra un mensaje si se alcanza una racha de 5 Pokémon adivinados.
+            if racha_actual == 5:  
+                # Aparece una ventana cuando llegas a los 5 pokemones adivinados, mostrando los que tiene escrito ahí.
+                messagebox.showinfo("Logro desbloqueado", "¡Has alcanzado una racha de 5 Pokémon adivinados!")  
 
         else:
-            vidas -= 1  # Reduce una vida si la conjetura es incorrecta.
-            racha_actual = 0  # Restablece la racha de Pokémon adivinados a 0.
+            # Reduce una vida si la conjetura es incorrecta.
+            vidas -= 1  
+            
+            # Restablece la racha de Pokémon adivinados a 0.
+            racha_actual = 0  
 
+            # Muestra un mensaje si se pierden todas las vidas.
             if vidas >= 0:
                 if vidas == 0:
-                    messagebox.showinfo("Juego terminado", f"Perdiste todas tus vidas. El Pokémon era: {pokemon_actual}. Tu puntuación final es: {puntuacion}")
-                    pokereiniciar()  # Reinicia el juego cuando se pierden todas las vidas.
+                    # Aparece una ventana diciendo que perdiste, el nombre del pokemon que tenías que adivinar y tu puntuación final.
+                    messagebox.showinfo("Juego terminado", f"Perdiste todas tus vidas. El Pokémon era: {pokemon_actual}. Tu puntuación final es: {puntuacion}")  
+                    # Reinicia el juego cuando se pierden todas las vidas.
+                    pokereiniciar()  
 
                 elif guess != pokemon_actual and guess not in pokemon_adivinados:
-                    messagebox.showerror("Incorrecto", f"Inténtalo de nuevo. Te quedan {vidas} vidas. El Pokémon era: {pokemon_actual}")
+                    # Esto asegura que el jugador no ha adivinado previamente el mismo Pokémon incorrectamente.
+                    # Aparece una ventana cuando pierdes una vida, el nombre del pokemon que tenías que adivinar y cuántas vidas te quedan.
+                    messagebox.showerror("Incorrecto", f"Inténtalo de nuevo. Te quedan {vidas} vidas. El Pokémon era: {pokemon_actual}")  
 
-                if vidas >= 0:
-                    pokerandom()  # Llama a "pokerandom" para seleccionar un nuevo Pokémon.
+                    # Llama a "pokerandom" para seleccionar un nuevo Pokémon.
+                    if vidas >= 0:  
+                        pokerandom()  
 
-    vidas_label.config(text=f"Vidas: {vidas}")
-    mayor_puntaje_label.config(text=f"Puntuación más alta: {mayor_puntaje}")
+
+    # Actualiza el texto de la etiqueta "vidas_label" con la cantidad de vidas actual (variable "vidas").
+    vidas_label.config(text=f"Vidas: {vidas}")  
+    
+    # Actualiza el texto de la etiqueta "mayor_puntaje_label" con el puntaje más alto actual (variable "mayor_puntaje").
+    mayor_puntaje_label.config(text=f"Puntuación más alta: {mayor_puntaje}")  
+
 
 # Función para obtener información detallada del Pokémon.
 def pokeinfo(pokemon_name):
-    url = f'https://pokeapi.co/api/v2/pokemon/{pokemon_name}/'  # Crea una URL para obtener información del Pokémon.
-    response = requests.get(url)  # Realiza una solicitud HTTP para obtener información.
+    # Crea una URL para obtener información del Pokémon.
+    url = f'https://pokeapi.co/api/v2/pokemon/{pokemon_name}/'  
+    
+    # Realiza una solicitud HTTP para obtener información.
+    response = requests.get(url)  
 
-    if response.status_code == 200:  # Comprueba si la solicitud fue exitosa.
-        data = response.json()  # Procesa los datos de la API.
+    # Comprueba si la solicitud fue exitosa.
+    if response.status_code == 200:  
+        # Procesa los datos de la API.
+        data = response.json()  
 
-        altura_cm = data['height'] * 10  # Calcula la altura en centímetros.
-        peso_kg = data['weight'] / 10  # Calcula el peso en kilogramos.
+        # Calcula la altura en centímetros.
+        altura_cm = data['height'] * 10  
+        
+        # Calcula el peso en kilogramos.
+        peso_kg = data['weight'] / 10  
 
-        # Crea una cadena de texto con información del Pokémon.
+        # Crea una cadena de texto con información del Pokémon: Nombre, id, altura(cm), peso(kg) y tipo.
         pokemon_info = f"Nombre: {data['name'].capitalize()}\n" \
                        f"ID: {data['id']}\n" \
                        f"Altura: {altura_cm} cm\n" \
                        f"Peso: {peso_kg} kg\n" \
                        "Tipos: " + ", ".join([t['type']['name'] for t in data['types']])
-        result_label.config(text=pokemon_info)  # Muestra la información en un widget llamado "result_label".
+        
+        # Muestra la información en un widget llamado "result_label".
+        result_label.config(text=pokemon_info)  
+
     else:
-        result_label.config(text="Información del Pokémon no disponible")  # Muestra un mensaje si la información no está disponible.
+        # Muestra un mensaje si la información no está disponible.
+        result_label.config(text="Información del Pokémon no disponible")  
+
+
+# Función para mostrar una pista sobre el Pokémon actual.
+def pokepista():
+    # Verifica si hay un Pokémon actual seleccionado.
+    if pokemon_actual is not None:  
+        # Obtiene la primera letra del nombre del Pokémon y la convierte a mayúsculas.
+        inicial = pokemon_actual[0].upper()  
+        
+        # Muestra una ventana emergente con la pista.
+        messagebox.showinfo("Pista", f"El nombre del Pokémon empieza con: {inicial}")  
+
 
 # Creación de la ventana del juego.
 app = tk.Tk()  # Crea una ventana principal de la GUI.
 app.title("Adivina el Pokémon")  # Establece el título de la ventana.
 
-background_image = Image.open('pokedex.jpg')  # Abre una imagen de fondo.
-background_photo = ImageTk.PhotoImage(background_image)  # Convierte la imagen en un objeto compatible con tkinter.
+# Abre una imagen de fondo.
+background_image = Image.open('pokedex.jpg')  
 
-background_label = tk.Label(app, image=background_photo)  # Crea una etiqueta para mostrar la imagen de fondo.
-background_label.place(x=0, y=0, relwidth=1, relheight=1)  # Ajusta la posición y el tamaño de la etiqueta en la ventana.
+# Convierte la imagen en un objeto compatible con tkinter.
+background_photo = ImageTk.PhotoImage(background_image)  
 
-label = tk.Label(app, text="¿Quién es ese Pokémon?:")  # Crea una etiqueta con un texto.
-label.pack()  # Coloca la etiqueta en la ventana.
+# Crea una etiqueta para mostrar la imagen de fondo.
+background_label = tk.Label(app, image=background_photo)  
 
-entry = tk.Entry(app)  # Crea un campo de entrada de texto.
-entry.pack()  # Coloca el campo de entrada en la ventana.
+# Ajusta la posición y el tamaño de la etiqueta en la ventana.
+background_label.place(x=0, y=0, relwidth=1, relheight=1)  
 
-check_button = tk.Button(app, text="Comprobar", command=pokecomprobar)  # Crea un botón para comprobar la conjetura.
-check_button.pack()  # Coloca el botón en la ventana.
+# Crea una etiqueta con un texto.
+label = tk.Label(app, text="¿Quién es ese Pokémon?:")  
 
-pokerandom_button = tk.Button(app, text="Siguiente Pokémon", command=pokerandom)  # Crea un botón para pasar al siguiente Pokémon.
-pokerandom_button.pack()  # Coloca el botón en la ventana.
+# Coloca la etiqueta en la ventana.
+label.pack()  
 
-image_label = tk.Label(app)  # Crea una etiqueta para mostrar la imagen del Pokémon.
-image_label.pack()  # Coloca la etiqueta en la ventana.
+# Crea un campo de entrada de texto.
+entry = tk.Entry(app)  
 
-result_label = tk.Label(app, text="")  # Crea una etiqueta para mostrar información del Pokémon.
-result_label.pack()  # Coloca la etiqueta en la ventana.
+# Coloca el campo de entrada en la ventana.
+entry.pack()  
 
-app.geometry("400x400")  # Establece el tamaño de la ventana.
+# Crea un botón para comprobar la conjetura.
+check_button = tk.Button(app, text="Comprobar", command=pokecomprobar)  
 
-puntuacion_label = tk.Label(app, text=f"Puntuación: {puntuacion}")  # Crea una etiqueta para mostrar la puntuación actual.
-puntuacion_label.pack()  # Coloca la etiqueta en la ventana.
+# Coloca el botón en la ventana.
+check_button.pack()  
 
-vidas_label = tk.Label(app, text=f"Vidas: {vidas}")  # Crea una etiqueta para mostrar la cantidad de vidas.
-vidas_label.pack()  # Coloca la etiqueta en la ventana.
+# Crea un botón para pasar al siguiente Pokémon.
+pokerandom_button = tk.Button(app, text="Siguiente Pokémon", command=pokerandom)  
+# Coloca el botón en la ventana.
+pokerandom_button.pack()  
 
-mayor_puntaje_label = tk.Label(app, text=f"Puntuación más alta: {mayor_puntaje}")  # Crea una etiqueta para mostrar el puntaje más alto.
-mayor_puntaje_label.pack()  # Coloca la etiqueta en la ventana.
+# Crea una etiqueta para mostrar la imagen del Pokémon.
+image_label = tk.Label(app)  
 
-app.mainloop()  # Inicia la aplicación y muestra la ventana principal.
+# Coloca la etiqueta en la ventana.
+image_label.pack()  
+
+# Crea una etiqueta para mostrar información del Pokémon.
+result_label = tk.Label(app, text="")  
+
+# Coloca la etiqueta en la ventana.
+result_label.pack()  
+
+# Establece el tamaño de la ventana.
+app.geometry("400x400")  
+
+# Crea una etiqueta para mostrar la puntuación actual.
+puntuacion_label = tk.Label(app, text=f"Puntuación: {puntuacion}")  
+
+# Coloca la etiqueta en la ventana.
+puntuacion_label.pack()  
+
+# Crea una etiqueta para mostrar la cantidad de vidas.
+vidas_label = tk.Label(app, text=f"Vidas: {vidas}")  
+
+# Coloca la etiqueta en la ventana.
+vidas_label.pack()  
+
+# Crea una etiqueta para mostrar el puntaje más alto.
+mayor_puntaje_label = tk.Label(app, text=f"Puntuación más alta: {mayor_puntaje}")  
+
+# Coloca la etiqueta en la ventana.
+mayor_puntaje_label.pack()  
+
+# Crea un botón con etiqueta "Pista" que llama a la función "pokepista".
+pista_button = tk.Button(app, text="Pista", command=pokepista)  
+
+# Coloca el botón en la ventana.
+pista_button.pack()  
+
+# Inicia la aplicación y muestra la ventana principal.
+app.mainloop() 
